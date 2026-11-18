@@ -88,6 +88,18 @@ def phylip():
     return "protdist + neighbor built a 4-leaf tree"
 
 
+def pars():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        (tmp / "infile").write_text(
+            "   4 3\nSEQ0000001110\nSEQ0000002110\nSEQ0000003001\nSEQ0000004001\n")
+        run(["pars"], cwd=tmp, stdin="Y\n")
+        tree = tmp / "outtree"
+        if not tree.exists() or tree.read_text().count("SEQ") != 4:
+            raise RuntimeError("pars produced no tree")
+    return "pars built a 4-leaf tree"
+
+
 def plot():
     import matplotlib
     matplotlib.use("Agg")
@@ -117,6 +129,10 @@ check("protdist", on_path("protdist"))
 check("neighbor", on_path("neighbor"))
 check("clustalo aligns", clustal)
 check("PHYLIP runs", phylip)
+
+print("\nTools used in TME2")
+check("pars", on_path("pars"))
+check("PHYLIP pars runs", pars)
 
 print("\nTools used in later sessions")
 for t in ("samtools", "bedtools", "mosdepth"):
