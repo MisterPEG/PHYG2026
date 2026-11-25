@@ -100,6 +100,20 @@ def pars():
     return "pars built a 4-leaf tree"
 
 
+def proml():
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        n, length = len(PROTEINS), len(next(iter(PROTEINS.values())))
+        (tmp / "infile").write_text(
+            " %d %d\n" % (n, length)
+            + "".join("%-10s%s\n" % ("SEQ000000" + k, s) for k, s in PROTEINS.items()))
+        run(["proml"], cwd=tmp, stdin="Y\n")
+        tree = tmp / "outtree"
+        if not tree.exists() or tree.read_text().count("SEQ") != 4:
+            raise RuntimeError("proml produced no tree")
+    return "proml built a 4-leaf tree"
+
+
 def plot():
     import matplotlib
     matplotlib.use("Agg")
@@ -133,6 +147,10 @@ check("PHYLIP runs", phylip)
 print("\nTools used in TME2")
 check("pars", on_path("pars"))
 check("PHYLIP pars runs", pars)
+
+print("\nTools used in TME4")
+check("proml", on_path("proml"))
+check("PHYLIP proml runs", proml)
 
 print("\nTools used in later sessions")
 for t in ("samtools", "bedtools", "mosdepth"):
